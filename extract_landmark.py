@@ -21,28 +21,28 @@ if __name__ == '__main__':
 
     # Instantiate the parser
     parser = argparse.ArgumentParser(description='')
-    parser.add_argument('--v', type=str, help='base path to videos, the directory with subject '
+    parser.add_argument('--i', type=str, help='base path to videos, the directory with subject '
                                               'folders inside which are youtube id folders with utterance')
     parser.add_argument('--o', type=str, help='output directory, will keep the same directory structure as input videos')
     parser.add_argument('--vb', type=int, help='verbose, output name of the files', default=1)
     args = parser.parse_args()
-    vid_fd = args.v
-    out_fd = args.o
+    bs_fldr = args.i
+    out_fldr = args.o
     verbose = args.vb
 
     #create base out dir
-    if not os.path.exists(out_fd):
-        os.makedirs(out_fd)
+    if not os.path.exists(out_fldr):
+        os.makedirs(out_fldr)
 
     #subject folders
-    subject_fldr = [f for f in os.listdir(vid_fd) if os.path.isdir(os.path.join(vid_fd, f))]
+    subject_fldr = [f for f in os.listdir(bs_fldr) if os.path.isdir(os.path.join(bs_fldr, f))]
 
     for sf in subject_fldr:
 
         if verbose:
             print('\t s: {}'.format(sf))
 
-        cur_sf_fldr = os.path.join(vid_fldr, sf)
+        cur_sf_fldr = os.path.join(bs_fldr, sf)
         vid_fldr = [f for f in os.listdir(cur_sf_fldr) if os.path.isdir(os.path.join(cur_sf_fldr, f))]
 
         for vid in vid_fldr:
@@ -51,7 +51,7 @@ if __name__ == '__main__':
                 print('\t\t v: {}'.format(vid))
 
             cur_vid_fldr = os.path.join(cur_sf_fldr, vid)
-            cur_out_fldr = os.path.join(out_fd, sf, vid)
+            cur_out_fldr = os.path.join(out_fldr, sf, vid)
 
             if not os.path.exists(cur_out_fldr):
                 os.makedirs(cur_out_fldr)
