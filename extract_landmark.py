@@ -39,10 +39,16 @@ if __name__ == '__main__':
 
     for sf in subject_fldr:
 
+        if verbose:
+            print('\t s: {}'.format(sf))
+
         cur_sf_fldr = os.path.join(vid_fldr, sf)
         vid_fldr = [f for f in os.listdir(cur_sf_fldr) if os.path.isdir(os.path.join(cur_sf_fldr, f))]
 
         for vid in vid_fldr:
+
+            if verbose:
+                print('\t\t v: {}'.format(vid))
 
             cur_vid_fldr = os.path.join(cur_sf_fldr, vid)
             cur_out_fldr = os.path.join(out_fd, sf, vid)
@@ -52,4 +58,8 @@ if __name__ == '__main__':
 
             v_files = [f for f in os.listdir(cur_vid_fldr) if f.endswith('.mp4')]
             for v in v_files:
+
+                if verbose:
+                    print('\t\t\t u: {}'.format(v))
+
                 get_one(os.path.join(cur_vid_fldr, v), cur_out_fldr)
