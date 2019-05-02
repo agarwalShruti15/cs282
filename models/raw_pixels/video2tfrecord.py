@@ -16,6 +16,7 @@ import math
 import os
 import tensorflow as tf
 import time
+import dlib
 
 FLAGS = flags.FLAGS
 flags.DEFINE_integer('n_videos_in_record', 10,
@@ -33,8 +34,8 @@ flags.DEFINE_string('destination', './example/output',
 flags.DEFINE_boolean('optical_flow', True,
                      'Indicates whether optical flow shall be computed and added as fourth '
                      'channel.')
-flags.DEFINE_integer('width_video', 1280, 'the width of the videos in pixels')
-flags.DEFINE_integer('height_video', 720, 'the height of the videos in pixels')
+flags.DEFINE_integer('width_video', 128, 'the width of the videos in pixels')
+flags.DEFINE_integer('height_video', 72, 'the height of the videos in pixels')
 flags.DEFINE_integer('n_frames_per_video', 5,
                      'specifies the number of frames to be taken from each video')
 flags.DEFINE_integer('n_channels', 4,
@@ -108,7 +109,7 @@ def compute_dense_optical_flow(prev_image, current_image):
 def convert_videos_to_tfrecord(source_path, destination_path,
                                n_videos_in_record=10, n_frames_per_video='all',
                                file_suffix="*.mp4", dense_optical_flow=True,
-                               width=1280, height=720,
+                               width=128, height=128,
                                color_depth="uint8", video_filenames=None):
   """Starts the process of converting video files to tfrecord files. If
   dense_optical_flow is set to True, the number of video channels in the
@@ -156,7 +157,6 @@ def convert_videos_to_tfrecord(source_path, destination_path,
     filenames = video_filenames
   else:
     filenames = gfile.Glob(os.path.join(source_path, file_suffix))
-
   if not filenames:
     raise RuntimeError('No data files found.')
 
@@ -289,8 +289,11 @@ def video_file_to_ndarray(i, file_path, n_frames_per_video, height, width,
       if math.floor(f % steps) == 0 or take_all_frames:
         frame = get_next_frame(cap)
         # unfortunately opencv uses bgr color format as default
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
         # special case handling: opencv's frame count sometimes differs from real frame count -> repeat
+        if frame is None:
+            restart = False
+            break
         if frame is None and frames_counter < n_frames:
           stop, cap, steps, prev_frame_none, frames_counter = repeat_image_retrieval(
             cap, file_path, take_all_frames, steps, frame, prev_frame_none,
@@ -302,6 +305,9 @@ def video_file_to_ndarray(i, file_path, n_frames_per_video, height, width,
             video.fill(0)
 
         else:
+          #print(frame.shape)
+          frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+          frame=extract_face(frame)
           if frames_counter >= n_frames:
             restart = False
             break
@@ -389,3 +395,13 @@ def convert_video_to_numpy(filenames, n_frames_per_video, width, height,
 
   return np.array(data)
 
+def extract_face(image):
+
+    d = dlib.get_frontal_face_detector()
+    rects=d(image, 1)
+    # Only get 1st face in image
+    r=rects[0]
+    crop_image=image[r.top():r.bottom(),r.left():r.right()]
+
+
+    return crop_image
