@@ -12,7 +12,7 @@ for p in people:
 
     source='/home/ubuntu/fakebusters/data/train/'+p+'/real'
     dest='/home/ubuntu/fakebusters/data/train/'+p
-    convert_videos_to_tfrecord(source, dest, 100, 32, "*.mp4")
+    convert_videos_to_tfrecord(source, dest, 2000, 32, "*.mp4")
     end=time.time()
     print("Duration "+p+" ={}".format(end-start))
 '''
@@ -23,8 +23,8 @@ dest='/Users/dsrincon/Dropbox/Personal/EDU/Posgrado/masters_usa/MIMS/2019-I/cs28
 convert_videos_to_tfrecord(source, dest, 100, 32, "*.mp4")
 end=time.time()
 print("Duration ={}".format(end-start))
-
 '''
+
 '''
 import math
 import random

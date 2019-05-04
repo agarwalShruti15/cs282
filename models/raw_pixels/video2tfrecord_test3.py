@@ -335,6 +335,8 @@ def video_file_to_ndarray(i, file_path, n_frames_per_video, height, width,
   chunk_gen=get_chunks(frame_list,sample_size)
   chunk_list=[chunk for chunk in chunk_gen]
   sample_lists=sample_chunks(chunk_list,n_frames_per_video)
+  n_frames=n_frames_per_video*len(sample_lists)
+  print('Subvid= {}'.format(len(sample_lists)))
   sample_ix=[x for sublist in sample_lists for x in sublist]
   frame_dic={}
   selec_img=[]
@@ -355,12 +357,9 @@ def video_file_to_ndarray(i, file_path, n_frames_per_video, height, width,
         # unfortunately opencv uses bgr color format as default
 
         # special case handling: opencv's frame count sometimes differs from real frame count -> repeat
-        if frame is None:
-            restart = False
-            break
 
         if frame is None and frames_counter < n_frames:
-
+            print('Correct')
             stop, cap, steps, prev_frame_none, frames_counter = repeat_image_retrieval(
             cap, file_path, take_all_frames, steps, frame, prev_frame_none,
             frames_counter)
