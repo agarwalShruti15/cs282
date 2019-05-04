@@ -16,6 +16,9 @@ import math
 import os
 import tensorflow as tf
 import time
+import dlib
+from multiprocessing.pool import ThreadPool
+from collections import deque
 
 FLAGS = flags.FLAGS
 flags.DEFINE_integer('n_videos_in_record', 10,
@@ -33,8 +36,8 @@ flags.DEFINE_string('destination', './example/output',
 flags.DEFINE_boolean('optical_flow', True,
                      'Indicates whether optical flow shall be computed and added as fourth '
                      'channel.')
-flags.DEFINE_integer('width_video', 1280, 'the width of the videos in pixels')
-flags.DEFINE_integer('height_video', 720, 'the height of the videos in pixels')
+flags.DEFINE_integer('width_video', 128, 'the width of the videos in pixels')
+flags.DEFINE_integer('height_video', 72, 'the height of the videos in pixels')
 flags.DEFINE_integer('n_frames_per_video', 5,
                      'specifies the number of frames to be taken from each video')
 flags.DEFINE_integer('n_channels', 4,
@@ -108,7 +111,7 @@ def compute_dense_optical_flow(prev_image, current_image):
 def convert_videos_to_tfrecord(source_path, destination_path,
                                n_videos_in_record=10, n_frames_per_video='all',
                                file_suffix="*.mp4", dense_optical_flow=True,
-                               width=1280, height=720,
+                               width=128, height=128,
                                color_depth="uint8", video_filenames=None):
   """Starts the process of converting video files to tfrecord files. If
   dense_optical_flow is set to True, the number of video channels in the
@@ -156,7 +159,6 @@ def convert_videos_to_tfrecord(source_path, destination_path,
     filenames = video_filenames
   else:
     filenames = gfile.Glob(os.path.join(source_path, file_suffix))
-
   if not filenames:
     raise RuntimeError('No data files found.')
 
@@ -284,13 +286,26 @@ def video_file_to_ndarray(i, file_path, n_frames_per_video, height, width,
   restart = True
   image_prev = None
 
+  ###---THREADING----
+  threadn = cv2.getNumberOfCPUs()
+  pool = ThreadPool(processes = threadn)
+  pending = deque()
+  threaded_mode = True
+  ###--------------------
+
   while restart:
     for f in range(frame_count):
+      if frames_counter >= n_frames:
+          restart = False
+          break
       if math.floor(f % steps) == 0 or take_all_frames:
+
+        #while len(pending) > 0 and pending[0].ready():
         frame = get_next_frame(cap)
-        # unfortunately opencv uses bgr color format as default
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        # special case handling: opencv's frame count sometimes differs from real frame count -> repeat
+
+        if frame is None:
+            restart = False
+            break
         if frame is None and frames_counter < n_frames:
           stop, cap, steps, prev_frame_none, frames_counter = repeat_image_retrieval(
             cap, file_path, take_all_frames, steps, frame, prev_frame_none,
@@ -302,33 +317,16 @@ def video_file_to_ndarray(i, file_path, n_frames_per_video, height, width,
             video.fill(0)
 
         else:
-          if frames_counter >= n_frames:
-            restart = False
-            break
 
-          # iterate over channels
-          for k in range(num_real_image_channel):
-            resizedImage = cv2.resize(frame[:, :, k], (width, height))
-            image[:, :, k] = resizedImage
+            #if len(pending) < threadn:
+            video=pool.apply_async(proc_frame,(image,image_prev,frame,frames_counter,n_frames,video,dense_optical_flow,num_real_image_channel,width, height)).get()
 
-          if dense_optical_flow:
-            # optical flow requires at least two images, make the OF image appended to the first image just black
-            if image_prev is not None:
-              frame_flow = compute_dense_optical_flow(image_prev, image)
-              frame_flow = cv2.cvtColor(frame_flow, cv2.COLOR_BGR2GRAY)
-            else:
-              frame_flow = np.zeros((height, width))
-            image_prev = image.copy()
+            #pending.append(task)
 
-          # assemble the video from the single images
-          if dense_optical_flow:
-            image_with_flow = image.copy()
-            image_with_flow = np.concatenate(
-              (image_with_flow, np.expand_dims(frame_flow, axis=2)), axis=2)
-            video[frames_counter, :, :, :] = image_with_flow
-          else:
-            video[frames_counter, :, :, :] = image
-          frames_counter += 1
+        # unfortunately opencv uses bgr color format as default
+
+        # special case handling: opencv's frame count sometimes differs from real frame count -> repeat
+
       else:
         get_next_frame(cap)
 
@@ -389,3 +387,47 @@ def convert_video_to_numpy(filenames, n_frames_per_video, width, height,
 
   return np.array(data)
 
+def extract_face(image):
+
+    d = dlib.get_frontal_face_detector()
+    rects=d(image, 1)
+    # Only get 1st face in image
+    r=rects[0]
+    crop_image=image[r.top():r.bottom(),r.left():r.right()]
+
+
+    return crop_image
+
+def proc_frame(image,image_prev,frame,frames_counter,n_frames,video,dense_optical_flow,num_real_image_channel,width, height):
+
+
+      #print(frame.shape)
+      frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+      frame=extract_face(frame)
+
+
+      # iterate over channels
+      for k in range(num_real_image_channel):
+        resizedImage = cv2.resize(frame[:, :, k], (width, height))
+        image[:, :, k] = resizedImage
+
+      if dense_optical_flow:
+        # optical flow requires at least two images, make the OF image appended to the first image just black
+        if image_prev is not None:
+          frame_flow = compute_dense_optical_flow(image_prev, image)
+          frame_flow = cv2.cvtColor(frame_flow, cv2.COLOR_BGR2GRAY)
+        else:
+          frame_flow = np.zeros((height, width))
+        image_prev = image.copy()
+
+      # assemble the video from the single images
+      if dense_optical_flow:
+        image_with_flow = image.copy()
+        image_with_flow = np.concatenate(
+          (image_with_flow, np.expand_dims(frame_flow, axis=2)), axis=2)
+        video[frames_counter, :, :, :] = image_with_flow
+      else:
+        video[frames_counter, :, :, :] = image
+      frames_counter += 1
+
+      return video

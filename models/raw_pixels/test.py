@@ -5,12 +5,12 @@ import numpy as np
 from video2tfrecord import convert_videos_to_tfrecord
 from tensorflow.python.platform import gfile
 
-height = 720
-width = 1280
-num_depth = 4
+height = 128
+width = 128
+num_depth = 3
 in_path = "./example/input"
 out_path = "./example/output"
-n_videos_per_record = 1
+n_videos_per_record = 10
 
 
 class Testvideo2tfrecord(unittest.TestCase):
