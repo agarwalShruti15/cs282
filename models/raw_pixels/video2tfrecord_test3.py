@@ -336,7 +336,6 @@ def video_file_to_ndarray(i, file_path, n_frames_per_video, height, width,
   chunk_list=[chunk for chunk in chunk_gen]
   sample_lists=sample_chunks(chunk_list,n_frames_per_video)
   n_frames=n_frames_per_video*len(sample_lists)
-  print('Subvid= {}'.format(len(sample_lists)))
   sample_ix=[x for sublist in sample_lists for x in sublist]
   frame_dic={}
   selec_img=[]
