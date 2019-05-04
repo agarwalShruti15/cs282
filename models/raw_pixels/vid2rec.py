@@ -4,7 +4,8 @@ import time
 
 
 
-people=['bernie','biden','hillary','justin','may','michelle','modi','obama','pelosi','putin','trump','warren']
+#people=['bernie','biden','hillary','justin','may','michelle','modi','obama','pelosi','putin','trump','warren']
+people=['obama','pelosi','putin','trump','warren']
 
 for p in people:
 
