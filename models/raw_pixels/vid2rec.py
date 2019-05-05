@@ -26,7 +26,7 @@ for p in people:
     #---TEST
     print('Processing TEST '+p)
     source='/home/ubuntu/fakebusters/data/test/'+p+'/real'
-    dest='/home/ubuntu/fakebusters/data/test/tf_records'+p
+    dest='/home/ubuntu/fakebusters/data/test/tf_records/'+p
     convert_videos_to_tfrecord(source, dest, 2000, 32, "*.mp4")
 
     end=time.time()
