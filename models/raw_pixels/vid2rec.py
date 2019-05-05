@@ -5,12 +5,12 @@ import time
 
 
 #people=['bernie','biden','hillary','justin','may','michelle','modi','obama','pelosi','putin','trump','warren']
-people=['obama','pelosi','putin','trump','warren']
+people=['modi']
 
 for p in people:
 
     start=time.time()
-
+    '''
     #---TRAIN--
     print('Processing TRAIN '+p)
     source='/home/ubuntu/fakebusters/data/train/'+p+'/real'
@@ -22,7 +22,7 @@ for p in people:
     source='/home/ubuntu/fakebusters/data/val/'+p+'/real'
     dest='/home/ubuntu/fakebusters/data/val/'+p
     convert_videos_to_tfrecord(source, dest, 2000, 32, "*.mp4")
-
+    '''
     #---TEST
     print('Processing TEST '+p)
     source='/home/ubuntu/fakebusters/data/test/'+p+'/real'
