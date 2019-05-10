@@ -33,14 +33,16 @@ for p in people:
 
     print("Duration "+p+" ={}".format(end-start))
 '''
+
+
 print('Processing:')
 start=time.time()
-source='/Users/dsrincon/Dropbox/Personal/EDU/Posgrado/masters_usa/MIMS/2019-I/cs282_deep_neural_networks/assignments/project/cs282/models/raw_pixels/test_vid'
-dest='/Users/dsrincon/Dropbox/Personal/EDU/Posgrado/masters_usa/MIMS/2019-I/cs282_deep_neural_networks/assignments/project/cs282/models/raw_pixels/test_vid'
+source='/Users/dsrincon/Dropbox/Personal/EDU/Posgrado/masters_usa/MIMS/2019-I/cs282_deep_neural_networks/assignments/project/data/test/modi/real'
+dest='/Users/dsrincon/Dropbox/Personal/EDU/Posgrado/masters_usa/MIMS/2019-I/cs282_deep_neural_networks/assignments/project/data/test/modi/real'
 convert_videos_to_tfrecord(source, dest, 100, 32, "*.mp4")
 end=time.time()
 print("Duration ={}".format(end-start))
-'''
+
 
 '''
 import math
