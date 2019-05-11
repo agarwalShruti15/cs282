@@ -9,7 +9,7 @@ from tensorflow.contrib import slim
 import cv2
 from test import *
 
-batch_size = 5 
+batch_size = 2 
 num_epochs = 10
 image_height = 720
 image_width = 1280
@@ -43,7 +43,7 @@ from tensorflow.python.ops.control_flow_ops import with_dependencies
 # If scopes is not an empty list, then only batch norms for that
 # scope are updated.
 def add_update_ops_bn(inputs, scopes = []):
-  training_mode = True 
+  training_mode = False 
   update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
   if update_ops:
     updates = tf.group(*update_ops)
@@ -65,10 +65,7 @@ with graph.as_default():
                                             num_classes=None,
                                             is_training=True)
 
-    pre_logits = tf.stop_gradient(pre_logits)
-    variables_to_restore = tf.contrib.framework.get_variables_to_restore(exclude=["resnet_v2_50/logits", "resnet_v2_50/AuxLogits"])
-    init_fn = tf.contrib.framework.assign_from_checkpoint_fn("resnet_v2_50.ckpt", variables_to_restore)
-
+    #pre_logits = tf.stop_gradient(pre_logits)
     lm_cell = tf.contrib.rnn.MultiRNNCell([tf.contrib.rnn.BasicLSTMCell(rnn_size)])
     # Use the dynamic_rnn function of Tensorflow to run the embedded inputs
     # using the lm_cell you've created, and obtain the outputs of the RNN cell.
@@ -93,6 +90,7 @@ with graph.as_default():
     # You can look at the tf.layers.dense function
     output_logits = tf.layers.dense(outputs[:,-1], units = num_classes)
     output_logits = add_update_ops_bn(output_logits)
+    softmaxes = tf.nn.softmax(output_logits, axis = -1)
 
     # Setup the loss: using the sparse_softmax_cross_entropy.
     # The logits are the output_logits we've computed.
@@ -100,33 +98,26 @@ with graph.as_default():
     # Don't forget to use the targets_mask we have, so your loss is not off,
     # And your model doesn't get rewarded for predicting PAD tokens
     # You might have to cast the masks into float32. Look at the tf.cast function.
+
     loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels = targets, logits = output_logits))
     prediction = tf.cast(tf.argmax(output_logits, axis = -1), dtype=tf.int32)
     accuracy = tf.reduce_sum(tf.cast(tf.equal(prediction, targets), dtype=tf.float32))
 
-    # Setup an optimizer (SGD, RMSProp, Adam), you can find a list under tf.train.*
-    # And provide it with a start learning rate.
-    global_step = tf.train.get_or_create_global_step()
-    lr = tf.train.exponential_decay(learning_rate, global_step, 5000, 0.96, staircase = True)
-    #optimizer = tf.train.RMSPropOptimizer(lr)  
-    optimizer = tf.train.AdamOptimizer(lr)
+    variables_to_restore = tf.contrib.framework.get_variables_to_restore()
+    init_fn = tf.contrib.framework.assign_from_checkpoint_fn("model.ckpt", variables_to_restore)
 
-    # We create a train_op that requires the optimizer we've created to minimize the
-    # loss we've defined.
-    # look for the optimizer.minimize function, define what should be miniminzed.
-    # You can provide it with the provide an optional global_step parameter as well that keeps of how many
-    # Optimizations steps have been run.
-    train_op = optimizer.minimize(loss)
-    saver = tf.train.Saver()
 
-names = {"biden": 0, "hillary":1, "justin":2, "pelosi":3, "trump":4}
+#names = {"biden": 0, "hillary":1, "justin":2, "pelosi":3, "trump":4}
+#names = {"hillary" : 1}
+#names = {"biden" : 0}
+names = {"hillary":1, "justin":2}
 import glob
 def get_data_for_class(name):
   print("Loading data for : " , name)
-  files = glob.glob("/home/kratarth/Downloads/cs282/data/dataset/" + name + "/tf/*.tfrecords")
+  files = glob.glob("/home/kratarth/Downloads/cs282/data/dataset/" + name + "/tf_imposter/*.tfrecords")
   print(files)
   # Use only 1 file for now
-  num, videos = get_number_of_records(files, 32)
+  num, videos = get_number_of_records(files[:1], 32)
   return num, videos
 
 
@@ -145,8 +136,9 @@ with tf.Session(graph=graph) as sess:
     sess.run(tf.global_variables_initializer())
     init_fn(sess)
     data = load_data()
+    print "#data = ", len(data)
     #Training
-    for epoch in range(num_epochs):
+    for epoch in range(1):
         random.shuffle(data)
         total_videos = len(data)
         total_loss = 0
@@ -155,11 +147,9 @@ with tf.Session(graph=graph) as sess:
             batch = data[iter_ * batch_size : (iter_+1) * batch_size]
             X = np.concatenate([_[1] for _ in batch], axis = 0)
             y = np.array([_[0] for _ in batch], dtype=np.int32)
-            _, np_loss, acc = sess.run([train_op, loss, accuracy ], feed_dict = {images : X, targets : y})
+            np_loss, acc, probs= sess.run([loss, accuracy, softmaxes ], feed_dict = {images : X, targets : y})
             total_loss += np_loss
             total_acc += acc
+            print probs
         print(iter_ + 1, total_loss, total_acc)
         print("Loss %f, Acc %f "%(total_loss * 1.0 / float(iter_ + 1), total_acc * 1.0 / float(total_videos)))
-    save_path = saver.save(sess, "./model.ckpt")
-    print("Model saved in path: %s" % save_path)
-

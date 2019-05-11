@@ -11,11 +11,9 @@ from test import *
 
 batch_size = 5 
 num_epochs = 10
-image_height = 720
-image_width = 1280
-image_size = 224
+image_size = 128 
 rnn_size = 256
-num_classes = 5
+num_classes = 12
 learning_rate = 1e-3
 timestamps = 32
 
@@ -28,8 +26,6 @@ def pre_process(images):
   processed_images = []
   for n in range(images.shape[0]):
     image = images[n]
-    image = cv2.resize(image,  (int(224 * (image_width * 1.0 / image_height)) + 1 , 224))
-    image = image[:224, 87 : 87 + 224,:]
     image = np.array(image, dtype=np.float32)
     for i in range(3):
       image[:,:,i] -= means[i]
@@ -119,12 +115,13 @@ with graph.as_default():
     train_op = optimizer.minimize(loss)
     saver = tf.train.Saver()
 
-names = {"biden": 0, "hillary":1, "justin":2, "pelosi":3, "trump":4}
+names = {'putin':5 ,'warren' : 6, 'justin' : 2, 'may' : 7, 'modi' : 8, 'trump': 4, 'hillary': 1, 'obama': 9, 'pelosi' : 3, 'bernie' : 10, 'michelle' : 11, 'biden': 0}
 import glob
 def get_data_for_class(name):
   print("Loading data for : " , name)
-  files = glob.glob("/home/kratarth/Downloads/cs282/data/dataset/" + name + "/tf/*.tfrecords")
-  print(files)
+  #files = glob.glob("/home/kratarth/Downloads/cs282/data/dataset/" + name + "/tf/*.tfrecords")
+  files = glob.glob("/home/kratarth/Downloads/cs282/data/tf_records/*" + name + "*.tfrecords")
+  print(" ********* Files *********" , files)
   # Use only 1 file for now
   num, videos = get_number_of_records(files, 32)
   return num, videos
@@ -160,6 +157,6 @@ with tf.Session(graph=graph) as sess:
             total_acc += acc
         print(iter_ + 1, total_loss, total_acc)
         print("Loss %f, Acc %f "%(total_loss * 1.0 / float(iter_ + 1), total_acc * 1.0 / float(total_videos)))
-    save_path = saver.save(sess, "./model.ckpt")
+    save_path = saver.save(sess, "./model_12class.ckpt")
     print("Model saved in path: %s" % save_path)
 
