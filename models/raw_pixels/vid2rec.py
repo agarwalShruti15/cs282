@@ -4,8 +4,8 @@ import time
 
 
 
-#people=['bernie','biden','hillary','justin','may','michelle','obama','pelosi','putin','trump','warren']
-people=['modi']
+people=['bernie','biden','hillary','justin','may','michelle','modi','obama','pelosi','putin','trump','warren']
+#people=['modi']
 
 for p in people:
 
@@ -22,11 +22,23 @@ for p in people:
     source='/home/ubuntu/fakebusters/data/val/'+p+'/real'
     dest='/home/ubuntu/fakebusters/data/val/'+p
     convert_videos_to_tfrecord(source, dest, 2000, 32, "*.mp4")
-    '''
+
     #---TEST
     print('Processing TEST '+p)
     source='/home/ubuntu/fakebusters/data/test/'+p+'/real'
     dest='/home/ubuntu/fakebusters/data/test/tf_records/'+p
+    convert_videos_to_tfrecord(source, dest, 2000, 32, "*.mp4")
+    '''
+    #---TEST
+    print('Processing FAKES '+p)
+    source='/home/ubuntu/fakebusters/data/fakes/'+p
+    dest='/home/ubuntu/fakebusters/data/fakes/tf_records/'+p
+    convert_videos_to_tfrecord(source, dest, 2000, 32, "*.mp4")
+
+    #---IMPOSTOR
+    print('Processing IMPOSTER '+p)
+    source='/home/ubuntu/fakebusters/data/fakes/imposter/'+p
+    dest='/home/ubuntu/fakebusters/data/fakes/imposter/tf_records/'+p
     convert_videos_to_tfrecord(source, dest, 2000, 32, "*.mp4")
 
     end=time.time()
