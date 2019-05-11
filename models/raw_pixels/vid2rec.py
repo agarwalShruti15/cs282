@@ -37,8 +37,8 @@ for p in people:
 
     #---IMPOSTOR
     print('Processing IMPOSTER '+p)
-    source='/home/ubuntu/fakebusters/data/fakes/imposter/'+p
-    dest='/home/ubuntu/fakebusters/data/fakes/imposter/tf_records/'+p
+    source='/home/ubuntu/fakebusters/data/imposter/'+p
+    dest='/home/ubuntu/fakebusters/data/imposter/tf_records/'+p
     convert_videos_to_tfrecord(source, dest, 2000, 32, "*.mp4")
 
     end=time.time()
