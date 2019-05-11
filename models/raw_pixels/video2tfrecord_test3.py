@@ -216,6 +216,8 @@ def convert_videos_to_tfrecord(source_path, destination_path,
     else:
       total_batch_number = int(math.ceil(len(filenames) / n_videos_in_record))
     print('Batch ' + str(i + 1) + '/' + str(total_batch_number) + " completed")
+    if data.size != 0:
+        return
     assert data.size != 0, 'something went wrong during video to numpy conversion'
     save_numpy_to_tfrecords(data, destination_path, 'batch_',
                             n_videos_in_record, i + 1, total_batch_number,
