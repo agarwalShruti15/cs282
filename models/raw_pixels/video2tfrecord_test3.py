@@ -369,11 +369,11 @@ def video_file_to_ndarray(i, file_path, n_frames_per_video, height, width,
             #cap, file_path, video, take_all_frames, steps, frame, prev_frame_none,
             #frames_counter)
 
-            if stop:
-                restart = False
-                break
-            else:
-                video.fill(0)
+            #if stop:
+                #restart = False
+                #break
+            #else:
+                #video.fill(0)
 
         else:
 
