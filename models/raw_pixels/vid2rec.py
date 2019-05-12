@@ -10,7 +10,7 @@ people=['bernie','biden','hillary','justin','may','michelle','modi','obama','pel
 for p in people:
 
     start=time.time()
-    '''
+
     #---TRAIN--
     print('Processing TRAIN '+p)
     source='/home/ubuntu/fakebusters/data/train/'+p+'/real'
@@ -28,7 +28,7 @@ for p in people:
     source='/home/ubuntu/fakebusters/data/test/'+p+'/real'
     dest='/home/ubuntu/fakebusters/data/test/tf_records/'+p
     convert_videos_to_tfrecord(source, dest, 2000, 32, "*.mp4")
-    '''
+
     #---TEST
     print('Processing FAKES '+p)
     source='/home/ubuntu/fakebusters/data/fakes/'+p
@@ -44,13 +44,15 @@ for p in people:
     end=time.time()
 
     print("Duration "+p+" ={}".format(end-start))
-'''
+    '''
+
+
 
 
 print('Processing:')
 start=time.time()
-source='/Users/dsrincon/Dropbox/Personal/EDU/Posgrado/masters_usa/MIMS/2019-I/cs282_deep_neural_networks/assignments/project/data/test/modi/real'
-dest='/Users/dsrincon/Dropbox/Personal/EDU/Posgrado/masters_usa/MIMS/2019-I/cs282_deep_neural_networks/assignments/project/data/test/modi/real'
+source='/Users/dsrincon/Dropbox/Personal/EDU/Posgrado/masters_usa/MIMS/2019-I/cs282_deep_neural_networks/assignments/project/data/imposter/pelosi'
+dest='/Users/dsrincon/Dropbox/Personal/EDU/Posgrado/masters_usa/MIMS/2019-I/cs282_deep_neural_networks/assignments/project/data/imposter/pelosi'
 convert_videos_to_tfrecord(source, dest, 100, 32, "*.mp4")
 end=time.time()
 print("Duration ={}".format(end-start))

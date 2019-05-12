@@ -40,8 +40,8 @@ flags.DEFINE_string('destination', './example/output',
 flags.DEFINE_boolean('optical_flow', True,
                      'Indicates whether optical flow shall be computed and added as fourth '
                      'channel.')
-flags.DEFINE_integer('width_video', 128, 'the width of the videos in pixels')
-flags.DEFINE_integer('height_video', 128, 'the height of the videos in pixels')
+flags.DEFINE_integer('width_video', 70, 'the width of the videos in pixels')
+flags.DEFINE_integer('height_video', 70, 'the height of the videos in pixels')
 flags.DEFINE_integer('n_frames_per_video', 5,
                      'specifies the number of frames to be taken from each video')
 flags.DEFINE_integer('n_channels', 3,
@@ -115,7 +115,7 @@ def compute_dense_optical_flow(prev_image, current_image):
 def convert_videos_to_tfrecord(source_path, destination_path,
                                n_videos_in_record=100, n_frames_per_video='all',
                                file_suffix="*.mp4", dense_optical_flow=False,
-                               width=128, height=128,
+                               width=70, height=70,
                                color_depth="uint8", video_filenames=None):
   """Starts the process of converting video files to tfrecord files. If
   dense_optical_flow is set to True, the number of video channels in the
@@ -305,7 +305,6 @@ def video_file_to_ndarray(i, file_path, n_frames_per_video, height, width,
   cap, frame_count = get_video_capture_and_frame_count(file_path)
 
 
-
   take_all_frames = False
   # if not all frames are to be used, we have to skip some -> set step size accordingly
   if n_frames_per_video == 'all':
@@ -346,6 +345,7 @@ def video_file_to_ndarray(i, file_path, n_frames_per_video, height, width,
   #-----END----
 
   #while restart:
+
   for f in range(frame_count):
 
      #if math.floor(f % steps) == 0 or take_all_frames:
@@ -353,6 +353,9 @@ def video_file_to_ndarray(i, file_path, n_frames_per_video, height, width,
      if f in sample_ix:
 
         frame = get_next_frame(cap)
+
+
+
         #f_copy=frame
 
         # unfortunately opencv uses bgr color format as default
@@ -372,27 +375,45 @@ def video_file_to_ndarray(i, file_path, n_frames_per_video, height, width,
 
         else:
 
-          frame = imutils.resize(frame, width=500)
+          #frame = imutils.resize(frame, width=500)
           frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-          frame=extract_face(frame)
+          #print(f)
+          try:
+              frame=extract_face(frame)
+          except:
+              video[frames_counter, :, :, :] = video[frames_counter-1, :, :, :]
+              continue
+          #print(width)
+          #print(height)
 
 
+
+          #print('frame_shape: {}'.format(frame.shape))
+          #print('channels: {}'.format(num_real_image_channel))
         if frames_counter >= (len(sample_ix)):
             restart = False
             break
 
 
           # iterate over channels - Resize to process.
+        #print('Channels for {}'.format(frames_counter))
         for k in range(num_real_image_channel):
+
             resizedImage = cv2.resize(frame[:, :, k], (width, height))
             image[:, :, k] = resizedImage
 
+
         video[frames_counter, :, :, :] = image
+        #print(hash(str(video[frames_counter])))
         frames_counter += 1
+
 
 
      else:
         get_next_frame(cap)
+
+
+
 
 
 
@@ -457,6 +478,7 @@ def convert_video_to_numpy(filenames, n_frames_per_video, width, height,
                                 num_real_image_channel=num_real_image_channel,
                                 dense_optical_flow=dense_optical_flow,
                                 number_of_videos=number_of_videos)
+
 
 
       for vid in v:
