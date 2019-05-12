@@ -45,7 +45,7 @@ for p in people:
     end=time.time()
 
     print("Duration "+p+" ={}".format(end-start))
-    '''
+    
 
 
 
