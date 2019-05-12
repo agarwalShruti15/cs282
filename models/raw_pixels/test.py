@@ -5,8 +5,8 @@ import numpy as np
 from video2tfrecord import convert_videos_to_tfrecord
 from tensorflow.python.platform import gfile
 
-height = 128
-width = 128
+height = 70
+width = 70
 num_depth = 3
 in_path = "./example/input"
 out_path = "./example/output"

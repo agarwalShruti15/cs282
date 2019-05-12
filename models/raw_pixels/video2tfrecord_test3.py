@@ -364,9 +364,11 @@ def video_file_to_ndarray(i, file_path, n_frames_per_video, height, width,
 
         if frame is None and frames_counter < n_frames:
             print('Correct')
-            stop, cap, steps, prev_frame_none, frames_counter = repeat_image_retrieval(
-            cap, file_path, take_all_frames, steps, frame, prev_frame_none,
-            frames_counter)
+            video[frames_counter, :, :, :] = video[frames_counter-1, :, :, :]
+            #stop, cap, steps,video, prev_frame_none, frames_counter = repeat_image_retrieval(
+            #cap, file_path, video, take_all_frames, steps, frame, prev_frame_none,
+            #frames_counter)
+
             if stop:
                 restart = False
                 break
