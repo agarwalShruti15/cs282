@@ -1,18 +1,18 @@
 import os
-import unittest
+#import unittest
 import tensorflow as tf
 import numpy as np
-from video2tfrecord import convert_videos_to_tfrecord
+#from video2tfrecord import convert_videos_to_tfrecord
 from tensorflow.python.platform import gfile
 
-height = 128
-width = 128
+height = 70
+width = 70
 num_depth = 3
 in_path = "./example/input"
 out_path = "./example/output"
 n_videos_per_record = 10
 
-
+'''
 class Testvideo2tfrecord(unittest.TestCase):
   def test_example1(self):
     n_frames = 5
@@ -44,7 +44,7 @@ class Testvideo2tfrecord(unittest.TestCase):
   #   self.assertTrue(filenames)
   #   self.assertEqual(n_files * n_videos_per_record,
   #                    get_number_of_records(filenames, n_frames))
-
+'''
 
 def read_and_decode(filename_queue, n_frames):
   """Creates one image sequence"""
